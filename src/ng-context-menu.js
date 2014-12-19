@@ -15,6 +15,11 @@
         menuElement: null
       };
     })
+    .controller('ContextMenuController', function () {
+      this.init = function (clicked) {
+        this.clicked = clicked;
+      }
+    })
     .directive('contextMenu', [
       '$document',
       'ContextMenuService',
@@ -69,7 +74,7 @@
               opened = false;
             }
 
-            $element.bind('contextmenu', function(event) {
+            function clicked(event) {
               if (!$scope.disabled()) {
                 if (ContextMenuService.menuElement !== null) {
                   close(ContextMenuService.menuElement);
@@ -89,7 +94,10 @@
                   open(event, ContextMenuService.menuElement);
                 });
               }
-            });
+            }
+
+            contextMenuController.init(clicked);
+            $element.bind('contextmenu', clicked);
 
             function handleKeyUpEvent(event) {
               //console.log('keyup');
@@ -126,5 +134,16 @@
           }
         };
       }
-    ]);
+    ])
+    .directive('clickForContextMenu', function() {
+      return {
+        restrict: 'CA',
+        require: '^contextMenu',
+        link: function (scope, element, attrs, contextMenuController) {
+          element.bind('click', function (event) {
+            contextMenuController.clicked(event);
+          })
+        }
+      }
+    });
 })(angular);
